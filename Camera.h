@@ -33,7 +33,7 @@ public:
 		this->direction = direction;
 		this->up = up;
 		this->horizontal = Vector3f::cross(direction,up);
-		screen_distance = 1/tan(angle/2);
+		screen_distance = 1.0f/tan(angle/2);
 		m_angle = angle;
 
 	}

@@ -29,6 +29,7 @@ public:
 	}
 
 	virtual bool intersect( const Ray& r , Hit& h , float tmin ){
+		cerr << "DSFOIDSFSDOIFJS" << '\n';
 		bool result = false;
 		for(unsigned i = 0; i < m_objects.size(); i++){
 			result = m_objects[i]->intersect(r, h, tmin);

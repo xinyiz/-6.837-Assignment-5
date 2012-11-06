@@ -42,24 +42,24 @@ int main( int argc, char* argv[] )
   SceneParser *scene = new SceneParser(argv[1]);
   Camera *camera = scene->getCamera();
   Group *group = scene->getGroup();
-  //Testing for 200 px by 200 px img
-  int size = 10;
+  // //Testing for 200 px by 200 px img
+  int size = 64;
   Image image(size, size);
   Vector2f pixel;
   Vector3f pixelIntersect (255,255,255);
   Vector3f pixelPass (0,0,0);
   Hit h = Hit();
-  float tmin = camera->getTMin(); 
+  float tmin = camera->getTMin();
   bool intersect = false;
   for(int x = 0; x < size; x++){
     for(int y = 0; y < size; y++){
       pixel = Vector2f((x-size/2)/(float)size,(y-size/2)/(float)size);
-      cout << "PIXEL" << pixel.x() << ':' << pixel.y() << ':' <<'\n';
+      //cout << "PIXEL" << pixel.x() << ':' << pixel.y() << ':' <<'\n';
       Ray camera_ray = camera->generateRay(pixel);
-      cout << "RAYORI" << camera_ray.getOrigin().x() << ':' << camera_ray.getOrigin().y() << ':' << camera_ray.getOrigin().z() << '\n';
-      cout << "RAYDIR" << camera_ray.getDirection().x() << ':' << camera_ray.getDirection().y() << ':' << camera_ray.getDirection().z() << '\n';
+      //cout << "RAYORI" << camera_ray.getOrigin().x() << ':' << camera_ray.getOrigin().y() << ':' << camera_ray.getOrigin().z() << '\n';
+      //cout << "RAYDIR" << camera_ray.getDirection().x() << ':' << camera_ray.getDirection().y() << ':' << camera_ray.getDirection().z() << '\n';
       intersect = group->intersect(camera_ray, h , tmin );
-      cout << "INTERSECT" << intersect << '\n';
+      //cout << "INTERSECT" << intersect << '\n';
       if(intersect){
         image.SetPixel(x,y, pixelIntersect );
       }

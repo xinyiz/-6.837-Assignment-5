@@ -16,10 +16,10 @@ public:
 	virtual float getTMin() const = 0 ; 
 
 protected:
-	Vector3f center; 
-	Vector3f direction;
-	Vector3f up;
-	Vector3f horizontal;
+	Vector3f m_center; 
+	Vector3f m_direction;
+	Vector3f m_up;
+	Vector3f m_horizontal;
 
 };
 
@@ -29,10 +29,10 @@ class PerspectiveCamera: public Camera
 {
 public:
 	PerspectiveCamera(const Vector3f& center, const Vector3f& direction,const Vector3f& up , float angle){
-		this->center = center;
-		this->direction = direction;
-		this->up = up;
-		this->horizontal = Vector3f::cross(direction,up);
+		m_center = center;
+		m_direction = direction;
+		m_up = up;
+		m_horizontal = Vector3f::cross(direction,up).normalized();
 		screen_distance = 1.0f/tan(angle/2);
 		m_angle = angle;
 
@@ -41,8 +41,10 @@ public:
 	virtual Ray generateRay( const Vector2f& point){
 		float x = point.x();
 		float y = point.y();
-		Vector3f ray_dir = Vector3f(x*horizontal+y*up+screen_distance*direction).normalized();
-		return Ray(center, ray_dir);
+		//Vector3f ray_dir = Vector3f((x*m_horizontal)+(y*m_up)+(screen_distance*m_direction)).normalized();
+		Vector3f ray_dir = Vector3f(x*m_horizontal)+Vector3f(y*m_up)+Vector3f(screen_distance*m_direction);
+		ray_dir = ray_dir.normalized();
+		return Ray(m_center, ray_dir);
 	}
 
 	virtual float getTMin() const { 

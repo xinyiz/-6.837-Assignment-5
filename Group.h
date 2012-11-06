@@ -1,3 +1,4 @@
+
 #ifndef GROUP_H
 #define GROUP_H
 
@@ -15,34 +16,39 @@ using  namespace std;
 class Group:public Object3D
 {
 public:
+	Group(){
+		m_num_objects = 0;
+	}
 
-  Group(){
+	Group( int num_objects ){
+		m_num_objects = num_objects;
+	}
 
-  }
-	
-  Group( int num_objects ){
+	~Group(){
 
-  }
+	}
 
-  ~Group(){
-   
-  }
+	virtual bool intersect( const Ray& r , Hit& h , float tmin ){
+		bool result = false;
+		for(unsigned i = 0; i < m_objects.size(); i++){
+			result = m_objects[i]->intersect(r, h, tmin);
+		}
+		return result;
+	}
 
-  virtual bool intersect( const Ray& r , Hit& h , float tmin ) {
-		
-   }
-	
-  void addObject( int index , Object3D* obj ){
+	void addObject( int index , Object3D* obj ){
+		m_objects.push_back(obj);
+		assert((int)m_objects.size() <= m_num_objects);
+	}
 
-  }
+	int getGroupSize(){ 
+		return m_objects.size();
+	}
 
-  int getGroupSize(){ 
-  
-  }
-
- private:
-
+private:
+	int m_num_objects;
+	vector<Object3D*> m_objects;
 };
 
 #endif
-	
+

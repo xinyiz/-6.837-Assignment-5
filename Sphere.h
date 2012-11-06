@@ -12,6 +12,7 @@ using namespace std;
 class Sphere: public Object3D
 {
 public:
+
 	Sphere(){ 
 		m_center = Vector3f(0,0,0);
 		m_radius = 1.0f;
@@ -23,21 +24,22 @@ public:
 		this->material =  material;
 	}
 	
-
 	~Sphere(){}
 
-
 	virtual bool intersect( const Ray& r , Hit& h , float tmin){
+
+		//Initialize parameters
 		Vector3f r_o = r.getOrigin() - m_center;
 		float b = 2*Vector3f::dot(r.getDirection(), r_o);
 		float c = Vector3f::dot(r_o,r_o) - m_radius*m_radius;
 		float discrim = sqrt(b*b - 4*c);
 		float t_0 = -1;
-		//Find valid intersection
+
+		//Find valid intersection at t_0
 		if (discrim == 0){
 			t_0 = -b/2;
 		}
-		else if (discrim > 0){
+		if (discrim > 0){
 			t_0 = 0.5*(-b + sqrt(discrim));
 			float t_1 = 0.5*(-b - sqrt(discrim));
 			if(t_0 < 0 and t_1 < 0)
@@ -50,6 +52,7 @@ public:
 					t_0 = t_1;
 			}
 		}
+
 		//Update hit
 		if(t_0 > tmin){
 			Vector3f norm = (t_0 - m_center).normalized(); 
@@ -58,7 +61,9 @@ public:
 		}
 		return false;
 	}
+
 protected:
+
 	Vector3f m_center;
 	float m_radius;
 

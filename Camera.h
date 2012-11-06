@@ -33,7 +33,7 @@ public:
 		m_direction = direction;
 		m_up = up;
 		m_horizontal = Vector3f::cross(direction,up).normalized();
-		screen_distance = 1.0f/tan(angle/2);
+		screen_distance = 1.0f/tan(angle/2.0f);
 		m_angle = angle;
 
 	}

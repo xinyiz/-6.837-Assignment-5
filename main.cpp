@@ -43,7 +43,7 @@ int main( int argc, char* argv[] )
   Camera *camera = scene->getCamera();
   Group *group = scene->getGroup();
   // //Testing for 200 px by 200 px img
-  int size = 64;
+  int size = 200;
   Image image(size, size);
   Vector2f pixel;
   Vector3f pixelIntersect (255,255,255);
@@ -53,7 +53,7 @@ int main( int argc, char* argv[] )
   bool intersect = false;
   for(int x = 0; x < size; x++){
     for(int y = 0; y < size; y++){
-      pixel = Vector2f((x-size/2)/(float)size,(y-size/2)/(float)size);
+      pixel = Vector2f((x-size/2.0f)/(size/2.0f),(y-size/2.0f)/(size/2.0f));
       //cout << "PIXEL" << pixel.x() << ':' << pixel.y() << ':' <<'\n';
       Ray camera_ray = camera->generateRay(pixel);
       //cout << "RAYORI" << camera_ray.getOrigin().x() << ':' << camera_ray.getOrigin().y() << ':' << camera_ray.getOrigin().z() << '\n';

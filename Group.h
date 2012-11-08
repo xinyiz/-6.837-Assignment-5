@@ -30,9 +30,17 @@ public:
 
 	virtual bool intersect( const Ray& r , Hit& h , float tmin ){
 		bool result = false;
+		Hit test =  Hit();
+		float closest_dist = FLT_MAX;
+	    int closest_obj = 0;
 		for(unsigned i = 0; i < m_objects.size(); i++){
-			result = m_objects[i]->intersect(r, h, tmin);
+			m_objects[i]->intersect(r, test, tmin);
+			if(test.getT() < closest_dist){
+				closest_obj = i;
+				closest_dist = test.getT();
+			}
 		}
+		result = m_objects[closest_obj]->intersect(r, h, tmin);
 		return result;
 	}
 

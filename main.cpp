@@ -40,6 +40,21 @@ int main( int argc, char* argv[] )
 	int width = atoi(argv[4]);
 	int height = atoi(argv[5]);
 	char* output_file = argv[7];
+	// General args
+	Camera *camera = scene->getCamera();
+	Group *group = scene->getGroup();
+	Image image(width, height);
+	Vector2f pixel;
+	Vector3f pixelIntersect (255,255,255);
+	Vector3f pixelPass (0,0,0);
+	Hit h = Hit();
+	float tmin = camera->getTMin();
+	float intersect_t = 0.0;
+	Vector3f intersect_p;
+	Vector3f light_dir = Vector3f();
+	Vector3f light_col = Vector3f();
+	float light_distance = float(0.0f);
+	// Depth args
 	int depth_s = 0;
 	int depth_e = 0;
 	int d_range = 0;
@@ -52,16 +67,9 @@ int main( int argc, char* argv[] )
 		d_range = depth_e - depth_s;
 		depth_output_file = argv[11];
 	}
+	//Lighting
+	Light* light = scene->getLight(0);
 
-	Camera *camera = scene->getCamera();
-	Group *group = scene->getGroup();
-	// //Testing for 200 px by 200 px img
-	Image image(width, height);
-	Vector2f pixel;
-	Vector3f pixelIntersect (255,255,255);
-	Vector3f pixelPass (0,0,0);
-	Hit h = Hit();
-	float tmin = camera->getTMin();
 	bool intersect = false;
 	for(int x = 0; x < width; x++){
 		for(int y = 0; y < height; y++){
@@ -74,17 +82,20 @@ int main( int argc, char* argv[] )
 			//cout << "DEPTH" << h.getT() << '\n';
 			cout << "INTERSECT" << intersect << '\n';
 			if(intersect){
+				intersect_t = h.getT();
+				intersect_p = camera_ray.pointAtParameter(intersect_t);
+				light->getIllumination(intersect_p, light_dir, light_col, light_distance);
+				Vector3f pixelIntersect =  h.getMaterial()->Shade(camera_ray,h,light_dir,light_col);
 				image.SetPixel(x,y, pixelIntersect );
 				if(argc > 11){
-					if(h.getT()>depth_e){
+					if(intersect_t>depth_e){
 						depth_image.SetPixel(x,y, pixelPass );
 					}
-					else if(h.getT()<depth_s){
+					else if(intersect_t<depth_s){
 						depth_image.SetPixel(x,y, pixelIntersect );
 					}
 					else{
-						float gray = (h.getT()-depth_s)/(float)d_range;
-						//cout << "gray" << gray << '\n';
+						float gray = (intersect_t-depth_s)/(float)d_range;
 						Vector3f pixelDepth (1-gray,1-gray,1-gray);
 						depth_image.SetPixel(x,y,pixelDepth);
 					}

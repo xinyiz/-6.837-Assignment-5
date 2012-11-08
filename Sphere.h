@@ -53,7 +53,8 @@ public:
 
 		//Update hit
 		if(t_0 > tmin){
-			Vector3f norm = (t_0 - m_center).normalized(); 
+			Vector3f point = r.pointAtParameter(t_0);
+			Vector3f norm = (point - m_center).normalized(); 
 			h.set(t_0, this->material, norm);
 			return true;
 		}

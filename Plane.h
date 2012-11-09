@@ -25,7 +25,7 @@ public:
 		float projection = Vector3f::dot(m_normal,r.getDirection());
 		if(projection != 0.0){
 			float t_0 = -(-m_d + Vector3f::dot(m_normal,r.getOrigin()))/projection;
-			if(t_0 > tmin){
+			if(t_0 > tmin and t_0 < h.getT()){
 				h.set(t_0, this->material, m_normal);
 				return true;
 			}

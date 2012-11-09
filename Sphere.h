@@ -52,7 +52,8 @@ public:
 		}
 
 		//Update hit
-		if(t_0 > tmin){
+		cout << h.getT() << '\n';
+		if(t_0 > tmin and t_0 < h.getT()){
 			Vector3f point = r.pointAtParameter(t_0);
 			Vector3f norm = (point - m_center).normalized(); 
 			h.set(t_0, this->material, norm);

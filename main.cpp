@@ -39,17 +39,13 @@ int main( int argc, char* argv[] )
 	SceneParser *scene = new SceneParser(argv[2]);
 	int width = atoi(argv[4]);
 	int height = atoi(argv[5]);
-	char* output_file = argv[7];
 	// General args
+	Hit h = Hit();
 	Camera *camera = scene->getCamera();
 	Group *group = scene->getGroup();
 	Image image(width, height);
-	Vector2f pixel;
 	Vector3f pixelIntersect (255,255,255);
 	Vector3f pixelPass (0,0,0);
-	Hit h = Hit();
-	float tmin = camera->getTMin();
-	float intersect_t = 0.0;
 	Vector3f intersect_p;
 	Vector3f light_dir = Vector3f();
 	Vector3f light_col = Vector3f();
@@ -58,14 +54,11 @@ int main( int argc, char* argv[] )
 	int depth_s = 0;
 	int depth_e = 0;
 	int d_range = 0;
-	char* depth_output_file = argv[7];
 	Image depth_image(width, height);
 	if(argc > 11){
-		cout << "HERE" << '\n';
 		depth_s = atoi(argv[9]);
 		depth_e = atoi(argv[10]);
 		d_range = depth_e - depth_s;
-		depth_output_file = argv[11];
 	}
 	//Lighting
 	Light* light = scene->getLight(0);
@@ -73,16 +66,16 @@ int main( int argc, char* argv[] )
 	bool intersect = false;
 	for(int x = 0; x < width; x++){
 		for(int y = 0; y < height; y++){
-			pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-width/2.0f)/(width/2.0f));
+			Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-width/2.0f)/(width/2.0f));
 			//cout << "PIXEL" << pixel.x() << ':' << pixel.y() << ':' <<'\n';
 			Ray camera_ray = camera->generateRay(pixel);
 			//cout << "RAYORI" << camera_ray.getOrigin().x() << ':' << camera_ray.getOrigin().y() << ':' << camera_ray.getOrigin().z() << '\n';
 			//cout << "RAYDIR" << camera_ray.getDirection().x() << ':' << camera_ray.getDirection().y() << ':' << camera_ray.getDirection().z() << '\n';
-			intersect = group->intersect(camera_ray, h , tmin );
+			intersect = group->intersect(camera_ray, h , camera->getTMin());
 			//cout << "DEPTH" << h.getT() << '\n';
-			cout << "INTERSECT" << intersect << '\n';
+			//cout << "INTERSECT" << intersect << '\n';
 			if(intersect){
-				intersect_t = h.getT();
+				float intersect_t = h.getT();
 				intersect_p = camera_ray.pointAtParameter(intersect_t);
 				light->getIllumination(intersect_p, light_dir, light_col, light_distance);
 				Vector3f pixelIntersect =  h.getMaterial()->Shade(camera_ray,h,light_dir,light_col);
@@ -92,27 +85,26 @@ int main( int argc, char* argv[] )
 						depth_image.SetPixel(x,y, pixelPass );
 					}
 					else if(intersect_t<depth_s){
-						depth_image.SetPixel(x,y, pixelIntersect );
+						depth_image.SetPixel(x,y,pixelIntersect );
 					}
 					else{
 						float gray = (intersect_t-depth_s)/(float)d_range;
-						Vector3f pixelDepth (1-gray,1-gray,1-gray);
+						Vector3f pixelDepth (1.0-gray,1.0-gray,1.0-gray);
 						depth_image.SetPixel(x,y,pixelDepth);
 					}
 				}
 			}
 			else{
 				image.SetPixel(x,y, pixelPass );
-				if(argc > 11){
+				if(argc > 11)
 					depth_image.SetPixel(x,y,pixelPass);
-				}
 			}
 		}
 	}
-	image.SaveImage(output_file);
+	image.SaveImage(argv[7]);
 	if(argc > 11){
 		cout << "END" << '\n';
-		depth_image.SaveImage(depth_output_file);
+		depth_image.SaveImage(argv[11]);
 	}
  
 	///TODO: below demonstrates how to use the provided Image class

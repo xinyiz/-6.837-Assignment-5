@@ -30,7 +30,9 @@ public:
 		if(params.z() >= tmin and params.z() < h.getT()){
 			if((params.x() + params.y()) <= 1 and params.x() >= 0 and params.y() >= 0){
 				Vector3f norm = params.x()*normals[1] + params.y()*normals[2] + (1-params.x()-params.y())*normals[0];
+				Vector2f tex = params.x()*texCoords[1] + params.y()*texCoords[2] + (1-params.x()-params.y())*texCoords[0];
 				h.set(params.z(), this->material, norm.normalized());
+				h.setTexCoord(tex);
 				return true;
 			}
 		}

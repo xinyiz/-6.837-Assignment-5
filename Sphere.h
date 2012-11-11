@@ -29,7 +29,7 @@ public:
 	virtual bool intersect( const Ray& r , Hit& h , float tmin){
 		//Initialize parameters
 		Vector3f r_o = r.getOrigin() - m_center;
-		float b = 2*Vector3f::dot(r.getDirection(), r_o);
+		float b = 2*Vector3f::dot(r.getDirection().normalized(), r_o);
 		float c = Vector3f::dot(r_o,r_o) - m_radius*m_radius;
 		float discrim = sqrt(b*b - 4*c);
 		float t_0 = -1;

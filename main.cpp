@@ -74,7 +74,7 @@ int main( int argc, char* argv[] )
 			//cout << "RAYDIR" << camera_ray.getDirection().x() << ':' << camera_ray.getDirection().y() << ':' << camera_ray.getDirection().z() << '\n';
 			intersect = group->intersect(camera_ray, h , camera->getTMin());
 			//cout << "DEPTH" << h.getT() << '\n';
-			cout << "INTERSECT" << intersect << '\n';
+			//cout << "INTERSECT" << intersect << '\n';
 			if(intersect){
 				float intersect_t = h.getT();
 				intersect_p = camera_ray.pointAtParameter(intersect_t);

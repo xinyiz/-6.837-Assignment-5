@@ -29,8 +29,8 @@ public:
 		Vector3f params = MA.inverse()*VB;
 		if(params.z() >= tmin and params.z() < h.getT()){
 			if((params.x() + params.y()) <= 1 and params.x() >= 0 and params.y() >= 0){
-				Vector3f norm = params.x()*normals[0] + params.y()*normals[1] + params.z()*normals[2];
-				h.set(params.z(), this->material, norm);
+				Vector3f norm = params.x()*normals[1] + params.y()*normals[2] + (1-params.x()-params.y())*normals[0];
+				h.set(params.z(), this->material, norm.normalized());
 				return true;
 			}
 		}

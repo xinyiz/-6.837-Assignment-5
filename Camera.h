@@ -30,7 +30,7 @@ class PerspectiveCamera: public Camera
 public:
 	PerspectiveCamera(const Vector3f& center, const Vector3f& direction,const Vector3f& up , float angle){
 		m_center = center;
-		m_direction = direction;
+		m_direction = direction.normalized();
 		m_up = up;
 		m_horizontal = Vector3f::cross(direction,up).normalized();
 		screen_distance = 1.0f/tan(angle/2.0f);

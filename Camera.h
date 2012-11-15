@@ -42,7 +42,9 @@ public:
 		float x = point.x();
 		float y = point.y();
 		//Vector3f ray_dir = Vector3f((x*m_horizontal)+(y*m_up)+(screen_distance*m_direction)).normalized();
-		Vector3f ray_dir = Vector3f(x*m_horizontal)+Vector3f(y*m_up)+Vector3f(screen_distance*m_direction);
+		Vector3f x_axis = Vector3f::cross(m_direction,m_up).normalized();
+		Vector3f y_axis = Vector3f::cross(x_axis,m_direction).normalized();
+		Vector3f ray_dir = Vector3f(x*x_axis)+Vector3f(y*y_axis)+Vector3f(screen_distance*m_direction);
 		ray_dir = ray_dir.normalized();
 		return Ray(m_center, ray_dir);
 	}

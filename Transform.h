@@ -23,9 +23,9 @@ public:
 		if(o->intersect( new_ray , h , tmin)){
 			Matrix4f norm_trans = Matrix4f(m_transform.inverse());
 			norm_trans.transpose();
-			Vector4f new_hit = Vector4f(h.getNormal(),0);
+			Vector4f new_hit = Vector4f(h.getNormal().normalized(),0);
 			Vector4f new_norm = norm_trans*new_hit;
-			h.set(h.getT(),h.getMaterial(),new_norm.xyz());
+			h.set(h.getT(),h.getMaterial(),new_norm.xyz().normalized());
 			return true;
 		}
 		return false;

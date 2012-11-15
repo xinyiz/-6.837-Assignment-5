@@ -40,10 +40,16 @@ public:
       c_s = pow(Vector3f::dot(dirToLight,R.normalized()),shininess);
     }
     Vector3f c_specular = Vector3f(c_s*lightColor.x()*specularColor.x(),c_s*lightColor.y()*specularColor.y(),c_s*lightColor.z()*specularColor.z());
-
-    Vector3f c_diffuse = max(0.0f,Vector3f::dot(dirToLight,s_normal))*Vector3f(getDiffuseColor().x()*lightColor.x(),
-      getDiffuseColor().y()*lightColor.y(),
-      getDiffuseColor().z()*lightColor.z());
+    Vector3f color;
+    if(t.valid()){
+      color = t(hit.texCoord.x(),hit.texCoord.y());
+    }
+    else{
+      color = getDiffuseColor();
+    }
+    Vector3f c_diffuse = max(0.0f,Vector3f::dot(dirToLight,s_normal))*Vector3f(color.x()*lightColor.x(),
+      color.y()*lightColor.y(),
+      color.z()*lightColor.z());
 
     return c_diffuse + c_specular;
 		

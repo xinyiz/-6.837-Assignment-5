@@ -45,7 +45,7 @@ int main( int argc, char* argv[] )
 	cout << "NUMOBJ" << group->getGroupSize() << '\n';
 	Image image(width, height);
 	Vector3f pixelIntersect (255,255,255);
-	Vector3f pixelPass (0,0,0);
+	Vector3f pixelPass = scene->getBackgroundColor();
 	Vector3f intersect_p;
 	Vector3f light_dir = Vector3f();
 	Vector3f light_col = Vector3f();
@@ -83,7 +83,7 @@ int main( int argc, char* argv[] )
 				image.SetPixel(x,y, pixelIntersect );
 				if(argc > 11){
 					if(intersect_t>depth_e){
-						depth_image.SetPixel(x,y, pixelPass );
+						depth_image.SetPixel(x,y,pixelPass );
 					}
 					else if(intersect_t<depth_s){
 						depth_image.SetPixel(x,y,pixelIntersect );

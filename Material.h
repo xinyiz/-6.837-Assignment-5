@@ -3,7 +3,6 @@
 
 #include <cassert>
 #include <vecmath.h>
-
 #include "Ray.h"
 #include "Hit.h"
 #include "texture.hpp"
@@ -32,10 +31,21 @@ public:
 
   Vector3f Shade( const Ray& ray, const Hit& hit,
                   const Vector3f& dirToLight, const Vector3f& lightColor ) {
-    Vector3f shade = max(0.0f,Vector3f::dot(dirToLight,hit.getNormal()))*Vector3f(getDiffuseColor().x()*lightColor.x(),
-      getDiffuseColor().y()*lightColor.z(),
+    Vector3f ray_dir = -ray.getDirection();
+    Vector3f s_normal = hit.getNormal();
+    Vector3f R = -ray_dir + 2*(max(0.0f,Vector3f::dot(ray_dir,s_normal)))*s_normal;
+    R.normalize();
+    float c_s = 0.0f;
+    if(Vector3f::dot(dirToLight,R.normalized())>0){
+      c_s = pow(Vector3f::dot(dirToLight,R.normalized()),shininess);
+    }
+    Vector3f c_specular = Vector3f(c_s*lightColor.x()*specularColor.x(),c_s*lightColor.y()*specularColor.y(),c_s*lightColor.z()*specularColor.z());
+
+    Vector3f c_diffuse = max(0.0f,Vector3f::dot(dirToLight,s_normal))*Vector3f(getDiffuseColor().x()*lightColor.x(),
+      getDiffuseColor().y()*lightColor.y(),
       getDiffuseColor().z()*lightColor.z());
-    return shade;
+
+    return c_diffuse + c_specular;
 		
   }
 

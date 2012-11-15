@@ -42,7 +42,7 @@ int main( int argc, char* argv[] )
 	// General args
 	Camera *camera = scene->getCamera();
 	Group *group = scene->getGroup();
-	cout << "NUMOBJ" << group->getGroupSize() << '\n';
+	//cout << "NUMOBJ" << group->getGroupSize() << '\n';
 	Image image(width, height);
 	Vector3f pixelIntersect (255,255,255);
 	Vector3f pixelPass = scene->getBackgroundColor();
@@ -61,8 +61,7 @@ int main( int argc, char* argv[] )
 		d_range = depth_e - depth_s;
 	}
 	//Lighting
-	Light* light = scene->getLight(0);
-
+	int num_lights = scene->getNumLights();
 	bool intersect = false;
 	for(int x = 0; x < width; x++){
 		for(int y = 0; y < height; y++){
@@ -78,8 +77,14 @@ int main( int argc, char* argv[] )
 			if(intersect){
 				float intersect_t = h.getT();
 				intersect_p = camera_ray.pointAtParameter(intersect_t);
-				light->getIllumination(intersect_p, light_dir, light_col, light_distance);
-				Vector3f pixelIntersect =  h.getMaterial()->Shade(camera_ray,h,light_dir,light_col);
+				Vector3f pixelIntersect = Vector3f(0,0,0);
+				for(int l = 0; l < num_lights; l++){
+					Light* light = scene->getLight(l);
+					light->getIllumination(intersect_p, light_dir, light_col, light_distance);
+					pixelIntersect +=  h.getMaterial()->Shade(camera_ray,h,light_dir,light_col);
+				}
+				Vector3f ambient_contrib = h.getMaterial()->getDiffuseColor()*scene->getAmbientLight();
+				pixelIntersect = pixelIntersect + ambient_contrib;
 				image.SetPixel(x,y, pixelIntersect );
 				if(argc > 11){
 					if(intersect_t>depth_e){

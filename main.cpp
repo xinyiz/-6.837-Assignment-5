@@ -65,7 +65,7 @@ int main( int argc, char* argv[] )
 	bool intersect = false;
 	for(int x = 0; x < width; x++){
 		for(int y = 0; y < height; y++){
-			Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-width/2.0f)/(width/2.0f));
+			Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-height/2.0f)/(height/2.0f));
 			//cout << "PIXEL" << pixel.x() << ':' << pixel.y() << ':' <<'\n';
 			Hit h = Hit();
 			Ray camera_ray = camera->generateRay(pixel);
@@ -101,7 +101,7 @@ int main( int argc, char* argv[] )
 				}
 			}
 			else{
-				image.SetPixel(x,y, pixelPass );
+				image.SetPixel(x,y, pixelPass);
 				if(argc > 11)
 					depth_image.SetPixel(x,y,pixelPass);
 			}

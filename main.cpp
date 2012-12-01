@@ -8,6 +8,7 @@
 #include "SceneParser.h"
 #include "Image.h"
 #include "Camera.h"
+#include "RayTracer.h"
 #include <string.h>
 
 using namespace std;
@@ -37,89 +38,22 @@ int main( int argc, char* argv[] )
 
 	// Parse args;
 	SceneParser *scene = new SceneParser(argv[2]);
+	RayTracer *r_trace = new RayTracer(scene,0);
 	int width = atoi(argv[4]);
 	int height = atoi(argv[5]);
 	// General args
 	Camera *camera = scene->getCamera();
-	Group *group = scene->getGroup();
-	//cout << "NUMOBJ" << group->getGroupSize() << '\n';
 	Image image(width, height);
-	Vector3f pixelIntersect (255,255,255);
-	Vector3f pixelPass = scene->getBackgroundColor();
-	Vector3f intersect_p;
-	Vector3f light_dir = Vector3f();
-	Vector3f light_col = Vector3f();
-	float light_distance = float(0.0f);
-	// Depth args
-	int depth_s = 0;
-	int depth_e = 0;
-	int d_range = 0;
-	Image depth_image(width, height);
-	if(argc > 11){
-		depth_s = atoi(argv[9]);
-		depth_e = atoi(argv[10]);
-		d_range = depth_e - depth_s;
-	}
-	//Lighting
-	int num_lights = scene->getNumLights();
-	bool intersect = false;
 	for(int x = 0; x < width; x++){
 		for(int y = 0; y < height; y++){
 			Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-height/2.0f)/(height/2.0f));
-			//cout << "PIXEL" << pixel.x() << ':' << pixel.y() << ':' <<'\n';
 			Hit h = Hit();
 			Ray camera_ray = camera->generateRay(pixel);
-			//cout << "RAYORI" << camera_ray.getOrigin().x() << ':' << camera_ray.getOrigin().y() << ':' << camera_ray.getOrigin().z() << '\n';
-			//cout << "RAYDIR" << camera_ray.getDirection().x() << ':' << camera_ray.getDirection().y() << ':' << camera_ray.getDirection().z() << '\n';
-			intersect = group->intersect(camera_ray, h , camera->getTMin());
-			//cout << "DEPTH" << h.getT() << '\n';
-			//cout << "INTERSECT" << intersect << '\n';
-			if(intersect){
-				float intersect_t = h.getT();
-				intersect_p = camera_ray.pointAtParameter(intersect_t);
-				Vector3f pixelIntersect = Vector3f(0,0,0);
-				for(int l = 0; l < num_lights; l++){
-					Light* light = scene->getLight(l);
-					light->getIllumination(intersect_p, light_dir, light_col, light_distance);
-					pixelIntersect +=  h.getMaterial()->Shade(camera_ray,h,light_dir,light_col);
-				}
-				Vector3f ambient_contrib = h.getMaterial()->getDiffuseColor()*scene->getAmbientLight();
-				pixelIntersect = pixelIntersect + ambient_contrib;
-				image.SetPixel(x,y, pixelIntersect );
-				if(argc > 11){
-					if(intersect_t>depth_e){
-						depth_image.SetPixel(x,y,pixelPass );
-					}
-					else if(intersect_t<depth_s){
-						depth_image.SetPixel(x,y,pixelIntersect );
-					}
-					else{
-						float gray = (intersect_t-depth_s)/(float)d_range;
-						Vector3f pixelDepth (1.0-gray,1.0-gray,1.0-gray);
-						depth_image.SetPixel(x,y,pixelDepth);
-					}
-				}
-			}
-			else{
-				image.SetPixel(x,y, pixelPass);
-				if(argc > 11)
-					depth_image.SetPixel(x,y,pixelPass);
-			}
+			Vector3f p_color = r_trace->traceRay(camera_ray, camera->getTMin(), 0, h );
+			image.SetPixel(x,y, p_color);
 		}
 	}
 	image.SaveImage(argv[7]);
-	if(argc > 11){
-		cout << "END" << '\n';
-		depth_image.SaveImage(argv[11]);
-	}
- 
-	///TODO: below demonstrates how to use the provided Image class
-	///Should be removed when you start
-	//Vector3f pixelColor (255,0,0);
-	//width and height
-	//Image image( 10 , 15 );
-	//image.SetPixel( 5,5, pixelColor );
-	//image.SaveImage("demo.bmp");
 	return 0;
 }
 

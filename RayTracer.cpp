@@ -38,22 +38,28 @@ RayTracer::~RayTracer()
 
 Vector3f RayTracer::traceRay( Ray& camera_ray, float tmin, int bounces, Hit& h ) const
 {
+
   Vector3f pixelPass = m_scene->getBackgroundColor(camera_ray.getDirection());
   bool intersect = g->intersect(camera_ray, h , tmin);
   if(intersect){
     float intersect_t = h.getT();
     Vector3f intersect_p = camera_ray.pointAtParameter(intersect_t);
-    Vector3f pixelIntersect = Vector3f(0,0,0);
+    Vector3f pixelIntersect = h.getMaterial()->getDiffuseColor()*m_scene->getAmbientLight();
     for(int l = 0; l < num_lights; l++){
       Light* light = m_scene->getLight(l);
       Vector3f light_dir = Vector3f();
       Vector3f light_col = Vector3f();
       float light_distance = float(0.0f);
       light->getIllumination(intersect_p, light_dir, light_col, light_distance);
-      pixelIntersect +=  h.getMaterial()->Shade(camera_ray,h,light_dir,light_col);
+      //Shadows
+      Ray test_shade = Ray(intersect_p,light_dir);
+      Hit h_shade = Hit();
+      bool intersect_shade = g->intersect(test_shade, h_shade, 0.001);
+      if(h_shade.getT() == light_distance){
+        pixelIntersect +=  h.getMaterial()->Shade(camera_ray,h,light_dir,light_col);
+      }
     }
-    Vector3f ambient_contrib = h.getMaterial()->getDiffuseColor()*m_scene->getAmbientLight();
-    pixelIntersect = pixelIntersect + ambient_contrib;
+    pixelIntersect = pixelIntersect;
     return pixelIntersect;
   }
   else{

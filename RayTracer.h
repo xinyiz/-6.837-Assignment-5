@@ -23,7 +23,7 @@ public:
   );
   ~RayTracer();
   
-  Vector3f traceRay( Ray& camera_ray, float tmin, int bounces, Hit& h ) const;
+  Vector3f traceRay( Ray& camera_ray, float tmin, float refractI, int bounces, Hit& h ) const;
 private:
   SceneParser* m_scene;
   Group* g;

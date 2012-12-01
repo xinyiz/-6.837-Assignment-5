@@ -10,8 +10,9 @@
 #include "Camera.h"
 #include "RayTracer.h"
 #include <string.h>
-
+#define BOUNCES 1
 using namespace std;
+
 
 float clampedDepth ( float depthInput, float depthMin , float depthMax);
 
@@ -38,7 +39,7 @@ int main( int argc, char* argv[] )
 
 	// Parse args;
 	SceneParser *scene = new SceneParser(argv[2]);
-	RayTracer *r_trace = new RayTracer(scene,0);
+	RayTracer *r_trace = new RayTracer(scene,BOUNCES);
 	int width = atoi(argv[4]);
 	int height = atoi(argv[5]);
 	// General args
@@ -49,11 +50,10 @@ int main( int argc, char* argv[] )
 			Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-height/2.0f)/(height/2.0f));
 			Hit h = Hit();
 			Ray camera_ray = camera->generateRay(pixel);
-			Vector3f p_color = r_trace->traceRay(camera_ray, camera->getTMin(), 0, h );
-			image.SetPixel(x,y, p_color);
+			Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), BOUNCES, h);
+			image.SetPixel(x,y, color);
 		}
 	}
 	image.SaveImage(argv[7]);
 	return 0;
 }
-

@@ -72,9 +72,9 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
 
       //Shadows
       Ray test_shade = Ray(intersect_p,light_dir);
-      Hit h_shade = Hit();
+      Hit h_shade = Hit(light_distance, NULL, NULL);
       bool intersect_shade = g->intersect(test_shade, h_shade, EPSILON);
-      if(h_shade.getT() == light_distance){
+      if(h_shade.getT() >= light_distance){
           pixelIntersect += h.getMaterial()->Shade(c_ray,h,light_dir,light_col);
       }
     }

@@ -30,6 +30,15 @@ public:
 	~Sphere(){}
 
 	virtual bool intersect( const Ray& r , Hit& h , float tmin){
+		// float tp = (-1 * b + d) / (2 * a);
+  //  float tm = (-1 * b - d) / (2 * a);
+  //  float t = tm;
+  //  if (tm < tmin)
+  //    {
+  //      if (tp < tmin) return false;
+  //      t = tp;
+  //    }
+  //  if (t > h . getT ()) return false;
 		//Initialize parameters
 		Vector3f r_o = r.getOrigin() - m_center;
 		float b = 2*Vector3f::dot(r.getDirection().normalized(), r_o);
@@ -45,11 +54,11 @@ public:
 			float t_1 = 0.5*(-b - sqrt(discrim));
 			if(t_0 < 0 and t_1 < 0)
 				return false;
-			if(t_0 > 0 and t_1 > 0){
+			if(t_0 > tmin and t_1 > tmin){
 				t_0 = min(t_0,t_1);
 			}
 			else{
-				if(t_1 > 0)
+				if(t_1 > tmin)
 					t_0 = t_1;
 			}
 		}

@@ -101,7 +101,6 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
 
           if (Vector3f::dot(c_ray.getDirection(), norm) > 0)
           {
-         //leaving the object
             nt = 1.0f;
             norm *= -1;
           }
@@ -128,9 +127,6 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
       }
 
       pixelIntersect += h.getMaterial()->getSpecularColor()*(R*reflColor + (1-R)*refrColor);
-    }
-    else{
-      return pixelPass;
     }
     return pixelIntersect;
   }

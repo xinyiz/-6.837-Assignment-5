@@ -50,7 +50,7 @@ int main( int argc, char* argv[] )
 			Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-height/2.0f)/(height/2.0f));
 			Hit h = Hit();
 			Ray camera_ray = camera->generateRay(pixel);
-			Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), 1.000293, BOUNCES, h);
+			Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), 1.0, BOUNCES, h);
 			image.SetPixel(x,y, color);
 		}
 	}

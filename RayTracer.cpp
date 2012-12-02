@@ -8,7 +8,7 @@
 #include <math.h>
 
 #define EPSILON 0.001
-
+#define REFRACTING false
 //IMPLEMENT THESE FUNCTIONS
 //These function definitions are mere suggestions. Change them as you like.
 Vector3f mirrorDirection( const Vector3f& normal, const Vector3f& incoming)
@@ -30,7 +30,7 @@ bool transmittedDirection( const Vector3f& normal, const Vector3f& incoming,
     return false;
   }
   else{
-    transmitted = (nr*nDi - sqrt(root_term))*normal - nr*incoming;
+    transmitted = nr*(incoming - normal*nDi) - normal*sqrt(root_term);
     return true;
   }
 }
@@ -55,11 +55,11 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
 {
 
   Vector3f pixelPass = m_scene->getBackgroundColor(c_ray.getDirection());
+  Vector3f pixelIntersect = m_scene->getAmbientLight();
   bool intersect = g->intersect(c_ray, h , tmin);
   if(intersect){
     float intersect_t = h.getT();
     Vector3f intersect_p = c_ray.pointAtParameter(intersect_t);
-    Vector3f pixelIntersect = h.getMaterial()->getDiffuseColor()*m_scene->getAmbientLight();
 
     for(int l = 0; l < num_lights; l++){
       //Light
@@ -68,7 +68,8 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
       Vector3f light_col = Vector3f();
       float light_distance = float(0.0f);
       light->getIllumination(intersect_p, light_dir, light_col, light_distance);
-      pixelIntersect +=  h.getMaterial()->Shade(c_ray,h,light_dir,light_col);
+      pixelIntersect = pixelIntersect*h.getMaterial()->getDiffuseColor();
+      //pixelIntersect +=  h.getMaterial()->Shade(c_ray,h,light_dir,light_col);
 
       //Shadows
       Ray test_shade = Ray(intersect_p,light_dir);
@@ -80,43 +81,55 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
     }
 
     if(bounces > 0){
-      float nt = h.getMaterial()->getRefractionIndex();
-      Vector3f base_color = h.getMaterial()->getSpecularColor();
+      bool refract = false;
+      Vector3f norm = h.getNormal().normalized();
+
+      float nt = 0.0f;
+      if( refractI != 1.0){
+        nt = h.getMaterial()->getRefractionIndex();
+      }
+      else{
+        nt = 1.0; 
+      }
+
       float R = 1.0;
 
       //Mirror reflection
-      Vector3f norm = h.getNormal().normalized();
-      Vector3f mirrorDir = mirrorDirection(norm,c_ray.getDirection());
+      Vector3f mirrorDir = mirrorDirection(norm,c_ray.getDirection().normalized());
       Ray mirrorRay = Ray(intersect_p,mirrorDir);
       Hit mir_h = Hit();
-      Vector3f reflColor = traceRay(mirrorRay, EPSILON, nt, bounces - 1, mir_h);
+      Vector3f reflColor = traceRay(mirrorRay, EPSILON, refractI, bounces - 1, mir_h);
 
-      //Refraction
       Vector3f refrDir = Vector3f();
       Vector3f refrColor = Vector3f();
-      if(h.getMaterial()->getRefractionIndex() > 0){
-        bool refract = transmittedDirection( norm, -1*c_ray.getDirection(), 
-        refractI, h.getMaterial()->getRefractionIndex(), refrDir);
-        if(refract){
-          Hit refr_h = Hit();
-          Ray refrRay = Ray(intersect_p,refrDir);
-          refrColor = traceRay(refrRay, EPSILON, nt, bounces - 1, refr_h);
+      if(REFRACTING){
+      //Refraction
+        if(h.getMaterial()->getRefractionIndex() > 0){
 
-          //Weighting
-          float c = 0.0f;
-          if(refractI <= nt){
-            c = abs(Vector3f::dot(-1*c_ray.getDirection(),norm));
+          refract = transmittedDirection(norm, -1*c_ray.getDirection(), 
+          refractI, nt, refrDir);
+
+          if(refract){
+            Hit refr_h = Hit();
+            //cout << "refrDir:" << refrDir.x() << ":" << refrDir.y() << ":" << refrDir.z();
+            Ray refrRay = Ray(intersect_p,refrDir);
+            refrColor = traceRay(refrRay, EPSILON, nt, bounces - 1, refr_h);
+
+            //Weighting
+            float c = 0.0f;
+            if(refractI <= nt){
+              c = abs(Vector3f::dot(-1*c_ray.getDirection(),norm));
+            }
+            else{
+              c = abs(Vector3f::dot(refrDir,norm));
+            }
+            float R_0 = pow(((nt - refractI)/(nt + refractI)),2);
+            R = R_0 + (1-R_0)*pow((1-c),5);
           }
-          else{
-            c = abs(Vector3f::dot(refrDir,norm));
-          }
-          float R_0 = pow((nt - refractI)/(nt + refractI),2);
-          R = R_0 + (1-R_0)*pow(1-c,5);
         }
       }
-      
-      pixelIntersect += base_color*(R*reflColor + (1-R)*refrColor);
 
+      pixelIntersect += h.getMaterial()->getSpecularColor()*(R*reflColor + (1-R)*refrColor);
     }
     return pixelIntersect;
   }

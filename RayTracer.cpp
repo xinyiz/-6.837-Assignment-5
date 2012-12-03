@@ -56,11 +56,11 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
   h = Hit( FLT_MAX, NULL, Vector3f( 0, 0, 0 ) );
   Vector3f pixelPass = m_scene->getBackgroundColor(c_ray.getDirection());
   bool intersect = g->intersect(c_ray, h , tmin);
-
+  Vector3f pixelIntersect = Vector3f();
   if(intersect){
     float intersect_t = h.getT();
     Vector3f intersect_p = c_ray.pointAtParameter(intersect_t);
-    Vector3f pixelIntersect = h.getMaterial()->getDiffuseColor()*m_scene->getAmbientLight();
+    pixelIntersect = h.getMaterial()->getDiffuseColor()*m_scene->getAmbientLight();
 
     for(int l = 0; l < m_scene->getNumLights(); l++){
       //Light
@@ -71,11 +71,12 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
       light->getIllumination(intersect_p, light_dir, light_col, light_distance);
 
       //Shadows
+      //cout << "LIGHT_COL:" << light_col.x() << ':' << light_col.y() << ':' << light_col.z(); 
       Ray test_shade = Ray(intersect_p,light_dir);
       Hit h_shade = Hit(light_distance, NULL, NULL);
       bool intersect_shade = g->intersect(test_shade, h_shade, EPSILON);
       if(h_shade.getT() >= light_distance){
-          pixelIntersect += h.getMaterial()->Shade(c_ray,h,light_dir,light_col);
+        pixelIntersect += h.getMaterial()->Shade(c_ray,h,light_dir,light_col);
       }
     }
 

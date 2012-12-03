@@ -1,11 +1,15 @@
 #include "Noise.h"
 #include "PerlinNoise.h"
-
+#include <iostream>
+using namespace std;
 Vector3f Noise::getColor(const Vector3f & pos)
 {
   //Fill in this function  ONLY.
   //INTERPOLATE BETWEEN TWO COLORS BY WEIGHTED AVERAGE
-  return Vector3f(1,1,1);
+  float N = PerlinNoise::octaveNoise(pos, octaves);
+  float M = (frequency*pos.x() + amplitude*N);
+  M = (M+1)/2;
+  return (M*color[0] + (1-M)*color[1]);
 }
 
 Noise::Noise(int _octaves,const Vector3f & color1, 

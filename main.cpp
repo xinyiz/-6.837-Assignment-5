@@ -11,6 +11,7 @@
 #include "RayTracer.h"
 #include <string.h>
 #define BOUNCES 4
+#define JITTER true
 using namespace std;
 
 
@@ -44,14 +45,32 @@ int main( int argc, char* argv[] )
 	int height = atoi(argv[5]);
 	// General args
 	Camera *camera = scene->getCamera();
-	Image image(width, height);
+	Image image(width*3,height*3);
 	for(int x = 0; x < width; x++){
 		for(int y = 0; y < height; y++){
-			Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-height/2.0f)/(height/2.0f));
-			Hit h = Hit();
-			Ray camera_ray = camera->generateRay(pixel);
-			Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), 1.0, BOUNCES, h);
-			image.SetPixel(x,y, color);
+
+			for(int i = 0; i < 3; i++){
+				for(int j = 0; j < 3; j++){
+					float r = (rand()/float(RAND_MAX))-0.5f;
+					float new_x = 3*x + i;
+					float new_y = 3*y + j;
+					//cout << "new_x:" << new_x << "new_y" << new_y << '\n';  
+					Vector2f pixel = Vector2f((new_x+r-(width*3)/2.0f)/((width*3)/2.0f),(new_y+r-(height*3)/2.0f)/((height*3)/2.0f));
+					//cout << "HERE" << '\n';  
+					Hit h = Hit();
+					Ray camera_ray = camera->generateRay(pixel);
+					Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), 1.0, BOUNCES, h);
+					//cout << "HERE2" << '\n'; 
+					image.SetPixel(new_x,new_y, color);
+					//cout << "HERE3" << '\n';
+				}
+			}
+
+			// Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-height/2.0f)/(height/2.0f));
+			// Hit h = Hit();
+			// Ray camera_ray = camera->generateRay(pixel);
+			// Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), 1.0, BOUNCES, h);
+			// image.SetPixel(x,y, color);
 		}
 	}
 	image.SaveImage(argv[7]);

@@ -19,7 +19,7 @@ public:
       assert( false );
   }
 
-  RayTracer( SceneParser* scene, int max_bounces //more arguments as you need...
+  RayTracer( SceneParser* scene, int max_bounces, bool shadow //more arguments as you need...
   );
   ~RayTracer();
   
@@ -30,7 +30,7 @@ private:
   Camera* c;
   int num_lights;
   int m_maxBounces;
-
+  bool m_shadow;
 };
 
 #endif // RAY_TRACER_H

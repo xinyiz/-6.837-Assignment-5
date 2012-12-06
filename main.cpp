@@ -10,14 +10,25 @@
 #include "Camera.h"
 #include "RayTracer.h"
 #include <string.h>
-#define BOUNCES 4
-#define JITTER true
 using namespace std;
 
 
 float clampedDepth ( float depthInput, float depthMin , float depthMax);
 
 #include "bitmap_image.hpp"
+int cap(int num, int c){
+	if (c == 0){
+		if (num < 0){
+			return 0;
+		}
+	}
+	else{
+		if (num > c){
+			return c;
+		}
+	}
+	return num;
+}
 int main( int argc, char* argv[] )
 {
 	// Fill in your implementation here.
@@ -31,7 +42,46 @@ int main( int argc, char* argv[] )
 		std::cout << "Argument " << argNum << " is: " << argv[argNum] << std::endl;
 
 	}
-	cout << "ARGC" << argc << '\n';
+	bool SHADOW = false;
+	bool JITTER = false;
+	bool FILTER = false;
+	int BOUNCES = 4;
+	cout << "s" << argv[8] << '\n';
+	if(std::strcmp(argv[8],"-shadows")==0){
+		cout << "AHERE" << '\n';;
+		SHADOW = true;
+		BOUNCES = atoi(argv[10]);
+		if(argc == 13){
+			JITTER = true;
+			FILTER = true;
+		}
+		else if(std::strcmp(argv[11],"-jitter")==0){
+			JITTER = true;
+		}
+		else if(std::strcmp(argv[11],"-filter")==0){
+			FILTER = true;
+		}
+	}
+	else{
+		cout << "BHERE" << '\n';
+		BOUNCES = atoi(argv[9]);
+		if(argc == 12){
+			JITTER = true;
+			FILTER = true;
+		}
+		else if(std::strcmp(argv[10],"-jitter")==0){
+			JITTER = true;
+		}
+		else if(std::strcmp(argv[10],"-filter")==0){
+			FILTER = true;
+		}
+	}
+	vector<float> K(5);
+	K.push_back(0.1201);
+	K.push_back(0.2339);
+	K.push_back(0.2931);
+	K.push_back(0.2339);
+	K.push_back(0.1201);
 	// First, parse the scene using SceneParser.
 	// Then loop over each pixel in the image, shooting a ray
 	// through that pixel and finding its intersection with
@@ -40,39 +90,89 @@ int main( int argc, char* argv[] )
 
 	// Parse args;
 	SceneParser *scene = new SceneParser(argv[2]);
-	RayTracer *r_trace = new RayTracer(scene,BOUNCES);
+	RayTracer *r_trace = new RayTracer(scene,BOUNCES,SHADOW);
 	int width = atoi(argv[4]);
 	int height = atoi(argv[5]);
 	// General args
 	Camera *camera = scene->getCamera();
-	Image image(width*3,height*3);
+	int i_width = width;
+	int i_height = height;
+	if(JITTER){
+		i_width = width*3;
+		i_height = height*3;
+	}
+	Image image(i_width,i_height);
 	for(int x = 0; x < width; x++){
 		for(int y = 0; y < height; y++){
-
-			for(int i = 0; i < 3; i++){
-				for(int j = 0; j < 3; j++){
-					float r = (rand()/float(RAND_MAX))-0.5f;
-					float new_x = 3*x + i;
-					float new_y = 3*y + j;
-					//cout << "new_x:" << new_x << "new_y" << new_y << '\n';  
-					Vector2f pixel = Vector2f((new_x+r-(width*3)/2.0f)/((width*3)/2.0f),(new_y+r-(height*3)/2.0f)/((height*3)/2.0f));
-					//cout << "HERE" << '\n';  
-					Hit h = Hit();
-					Ray camera_ray = camera->generateRay(pixel);
-					Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), 1.0, BOUNCES, h);
-					//cout << "HERE2" << '\n'; 
-					image.SetPixel(new_x,new_y, color);
-					//cout << "HERE3" << '\n';
+			if(JITTER){
+				for(int i = 0; i < 3; i++){
+					for(int j = 0; j < 3; j++){
+						float r = (rand()/float(RAND_MAX))-0.5f;
+						float new_x = 3*x + i;
+						float new_y = 3*y + j;
+						Vector2f pixel = Vector2f((new_x+r-i_width/2.0f)/(i_width/2.0f),(new_y+r-i_height/2.0f)/(i_height/2.0f));
+						Hit h = Hit();
+						Ray camera_ray = camera->generateRay(pixel);
+						Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), 1.0, BOUNCES, h);
+						image.SetPixel(new_x,new_y, color);
+					}
 				}
 			}
-
-			// Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-height/2.0f)/(height/2.0f));
-			// Hit h = Hit();
-			// Ray camera_ray = camera->generateRay(pixel);
-			// Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), 1.0, BOUNCES, h);
-			// image.SetPixel(x,y, color);
+			else{
+				Vector2f pixel = Vector2f((x-width/2.0f)/(width/2.0f),(y-height/2.0f)/(height/2.0f));
+				Hit h = Hit();
+				Ray camera_ray = camera->generateRay(pixel);
+				Vector3f color = r_trace->traceRay( camera_ray, camera->getTMin(), 1.0, BOUNCES, h);
+				image.SetPixel(x,y, color);
+			}
 		}
+	}
+	if(FILTER){
+		Image blur_image_h(i_width,i_height);
+		Image blur_image_w(i_width,i_height);
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				if(JITTER){
+					for(int i = 0; i < 3; i++){
+						for(int j = 0; j < 3; j++){
+							float new_x = 3*x + i;
+							float new_y = 3*y + j;
+							Vector3f blurred_h = image.GetPixel(new_x,cap(new_y-2,0))*K[0] + image.GetPixel(new_x,cap(new_y-1,0))*K[1] + image.GetPixel(new_x,new_y)*K[2] + image.GetPixel(new_x,cap(new_y+1,i_height-1))*K[3] + 
+							image.GetPixel(new_x,cap(new_y+2,i_height-1))*K[4];
+							blur_image_h.SetPixel(new_x,new_y,blurred_h);
+						}
+					}
+				}
+				else{
+					Vector3f blurred_h = image.GetPixel(x,cap(y-2,0))*K[0] + image.GetPixel(x,cap(y-1,0))*K[1] + image.GetPixel(x,y)*K[2] + image.GetPixel(x,cap(y+1,i_height-1))*K[3] + 
+					image.GetPixel(x,cap(y+2,i_height-1))*K[4];
+					blur_image_h.SetPixel(x,y,blurred_h);
+				}
+			}
+		}
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				if(JITTER){
+					for(int i = 0; i < 3; i++){
+						for(int j = 0; j < 3; j++){
+							float new_x = 3*x + i;
+							float new_y = 3*y + j;
+							Vector3f blurred_w = blur_image_h.GetPixel(cap(new_x-2,0),new_y)*K[0] + blur_image_h.GetPixel(cap(new_x-1,0),new_y)*K[1] + blur_image_h.GetPixel(new_x,new_y)*K[2] + blur_image_h.GetPixel(cap(new_x+1,i_width-1),new_y)*K[3] + 
+							blur_image_h.GetPixel(cap(new_x+2,i_width-1),new_y)*K[4];
+							blur_image_w.SetPixel(new_x,new_y,blurred_w);
+						}
+					}
+				}
+				else{
+					Vector3f blurred_w = blur_image_h.GetPixel(cap(x-2,0),y)*K[0] + blur_image_h.GetPixel(cap(x-1,0),y)*K[1] + blur_image_h.GetPixel(x,y)*K[2] + blur_image_h.GetPixel(cap(x+1,i_width-1),y)*K[3] + 
+					blur_image_h.GetPixel(cap(x+2,i_width-1),y)*K[4];
+					blur_image_w.SetPixel(x,y,blurred_w);
+				}
+			}
+		}
+
 	}
 	image.SaveImage(argv[7]);
 	return 0;
 }
+

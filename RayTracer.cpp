@@ -35,7 +35,7 @@ bool transmittedDirection( const Vector3f& normal, const Vector3f& incoming,
     return true;
   }
 }
-RayTracer::RayTracer( SceneParser * scene, int max_bounces
+RayTracer::RayTracer( SceneParser * scene, int max_bounces, bool shadow
   //more arguments if you need...
                       ) :
   m_scene(scene)
@@ -45,6 +45,7 @@ RayTracer::RayTracer( SceneParser * scene, int max_bounces
   c=scene->getCamera();
   num_lights = scene->getNumLights();
   m_maxBounces = max_bounces;
+  m_shadow = shadow;
 }
 
 RayTracer::~RayTracer()
@@ -72,12 +73,18 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
 
       //Shadows
       //cout << "LIGHT_COL:" << light_col.x() << ':' << light_col.y() << ':' << light_col.z(); 
-      Ray test_shade = Ray(intersect_p,light_dir);
-      Hit h_shade = Hit(light_distance, NULL, NULL);
-      bool intersect_shade = g->intersect(test_shade, h_shade, EPSILON);
-      if(h_shade.getT() >= light_distance){
+      if(m_shadow){
+        Ray test_shade = Ray(intersect_p,light_dir);
+        Hit h_shade = Hit(light_distance, NULL, NULL);
+        bool intersect_shade = g->intersect(test_shade, h_shade, EPSILON);
+        if(h_shade.getT() >= light_distance){
+          pixelIntersect += h.getMaterial()->Shade(c_ray,h,light_dir,light_col);
+        }
+      }
+      else{
         pixelIntersect += h.getMaterial()->Shade(c_ray,h,light_dir,light_col);
       }
+
     }
 
     if(bounces > 0){

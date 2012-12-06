@@ -46,12 +46,15 @@ int main( int argc, char* argv[] )
 	bool JITTER = false;
 	bool FILTER = false;
 	int BOUNCES = 4;
-	cout << "s" << argv[8] << '\n';
+	cout << "argc" << argc << '\n';
 	if(std::strcmp(argv[8],"-shadows")==0){
 		cout << "AHERE" << '\n';;
 		SHADOW = true;
 		BOUNCES = atoi(argv[10]);
-		if(argc == 13){
+		if(argc == 11){
+
+		}
+		else if(argc == 13){
 			JITTER = true;
 			FILTER = true;
 		}
@@ -65,7 +68,10 @@ int main( int argc, char* argv[] )
 	else{
 		cout << "BHERE" << '\n';
 		BOUNCES = atoi(argv[9]);
-		if(argc == 12){
+		if(argc == 10){
+
+		}
+		else if(argc == 12){
 			JITTER = true;
 			FILTER = true;
 		}
@@ -76,12 +82,7 @@ int main( int argc, char* argv[] )
 			FILTER = true;
 		}
 	}
-	vector<float> K(5);
-	K.push_back(0.1201);
-	K.push_back(0.2339);
-	K.push_back(0.2931);
-	K.push_back(0.2339);
-	K.push_back(0.1201);
+
 	// First, parse the scene using SceneParser.
 	// Then loop over each pixel in the image, shooting a ray
 	// through that pixel and finding its intersection with
@@ -130,6 +131,7 @@ int main( int argc, char* argv[] )
 	if(FILTER){
 		Image blur_image_h(i_width,i_height);
 		Image blur_image_w(i_width,i_height);
+		Image image_final(i_width/3,i_height/3);
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < height; y++){
 				if(JITTER){
@@ -137,19 +139,23 @@ int main( int argc, char* argv[] )
 						for(int j = 0; j < 3; j++){
 							float new_x = 3*x + i;
 							float new_y = 3*y + j;
-							Vector3f blurred_h = image.GetPixel(new_x,cap(new_y-2,0))*K[0] + image.GetPixel(new_x,cap(new_y-1,0))*K[1] + image.GetPixel(new_x,new_y)*K[2] + image.GetPixel(new_x,cap(new_y+1,i_height-1))*K[3] + 
-							image.GetPixel(new_x,cap(new_y+2,i_height-1))*K[4];
+							Vector3f blurred_h = image.GetPixel(new_x,cap(new_y-2,0))*0.1201 + image.GetPixel(new_x,cap(new_y-1,0))*0.2339 + image.GetPixel(new_x,new_y)*0.2931 + image.GetPixel(new_x,cap(new_y+1,i_height-1))*0.2339 + 
+							image.GetPixel(new_x,cap(new_y+2,i_height-1))*0.1201;
+							//cout << "blurred_h:" << blurred_h.x() << ':' << blurred_h.y() << ':' << blurred_h.z() << '\n';
 							blur_image_h.SetPixel(new_x,new_y,blurred_h);
 						}
 					}
 				}
 				else{
-					Vector3f blurred_h = image.GetPixel(x,cap(y-2,0))*K[0] + image.GetPixel(x,cap(y-1,0))*K[1] + image.GetPixel(x,y)*K[2] + image.GetPixel(x,cap(y+1,i_height-1))*K[3] + 
-					image.GetPixel(x,cap(y+2,i_height-1))*K[4];
+					Vector3f blurred_h = image.GetPixel(x,cap(y-2,0))*0.1201 + image.GetPixel(x,cap(y-1,0))*0.2339 + image.GetPixel(x,y)*0.2931 + image.GetPixel(x,cap(y+1,i_height-1))*0.2339 + 
+					image.GetPixel(x,cap(y+2,i_height-1))*0.1201;
+					//cout << "blurred_h:" << blurred_h.x() << ':' << blurred_h.y() << ':' << blurred_h.z() << '\n';
+					//cout << "blurred_h:" << 0.1201 << ':' << blurred_h.y() << ':' << blurred_h.z() << '\n';
 					blur_image_h.SetPixel(x,y,blurred_h);
 				}
 			}
 		}
+		cout << "F_HERE" << '\n';
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < height; y++){
 				if(JITTER){
@@ -157,22 +163,42 @@ int main( int argc, char* argv[] )
 						for(int j = 0; j < 3; j++){
 							float new_x = 3*x + i;
 							float new_y = 3*y + j;
-							Vector3f blurred_w = blur_image_h.GetPixel(cap(new_x-2,0),new_y)*K[0] + blur_image_h.GetPixel(cap(new_x-1,0),new_y)*K[1] + blur_image_h.GetPixel(new_x,new_y)*K[2] + blur_image_h.GetPixel(cap(new_x+1,i_width-1),new_y)*K[3] + 
-							blur_image_h.GetPixel(cap(new_x+2,i_width-1),new_y)*K[4];
+							Vector3f blurred_w = blur_image_h.GetPixel(cap(new_x-2,0),new_y)*0.1201 + blur_image_h.GetPixel(cap(new_x-1,0),new_y)*0.2339 + blur_image_h.GetPixel(new_x,new_y)*0.2931 + blur_image_h.GetPixel(cap(new_x+1,i_width-1),new_y)*0.2339 + 
+							blur_image_h.GetPixel(cap(new_x+2,i_width-1),new_y)*0.1201;
 							blur_image_w.SetPixel(new_x,new_y,blurred_w);
 						}
 					}
 				}
 				else{
-					Vector3f blurred_w = blur_image_h.GetPixel(cap(x-2,0),y)*K[0] + blur_image_h.GetPixel(cap(x-1,0),y)*K[1] + blur_image_h.GetPixel(x,y)*K[2] + blur_image_h.GetPixel(cap(x+1,i_width-1),y)*K[3] + 
-					blur_image_h.GetPixel(cap(x+2,i_width-1),y)*K[4];
+					Vector3f blurred_w = blur_image_h.GetPixel(cap(x-2,0),y)*0.1201 + blur_image_h.GetPixel(cap(x-1,0),y)*0.2339 + blur_image_h.GetPixel(x,y)*0.2931 + blur_image_h.GetPixel(cap(x+1,i_width-1),y)*0.2339 + 
+					blur_image_h.GetPixel(cap(x+2,i_width-1),y)*0.1201;
 					blur_image_w.SetPixel(x,y,blurred_w);
 				}
 			}
 		}
+		cout << "F_HERE2" << '\n';
+		for(int x = 0; x < i_width/3; x++){
+			for(int y = 0; y < i_height/3; y++){
 
+				int a_x = 3*x+1;
+				int a_y = 3*y+1;
+				Vector3f sum = Vector3f();
+				for(int i = -1; i < 2; i++){
+					for(int j = -1; j < 2; j++){
+						sum += blur_image_w.GetPixel(a_x+i,a_y+j);
+					}
+				}
+				sum = sum/9.0;
+				image_final.SetPixel(x,y,sum);
+
+			}
+		}
+		image_final.SaveImage(argv[7]);
 	}
-	image.SaveImage(argv[7]);
+	else{
+		image.SaveImage(argv[7]);
+	}
+
 	return 0;
 }
 

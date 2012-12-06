@@ -56,11 +56,11 @@ Vector3f RayTracer::traceRay( Ray& c_ray, float tmin, float refractI, int bounce
   h = Hit( FLT_MAX, NULL, Vector3f( 0, 0, 0 ) );
   Vector3f pixelPass = m_scene->getBackgroundColor(c_ray.getDirection());
   bool intersect = g->intersect(c_ray, h , tmin);
-  Vector3f pixelIntersect = Vector3f();
+  Vector3f pixelIntersect = m_scene->getAmbientLight();
   if(intersect){
     float intersect_t = h.getT();
     Vector3f intersect_p = c_ray.pointAtParameter(intersect_t);
-    pixelIntersect = h.getMaterial()->getDiffuseColor()*m_scene->getAmbientLight();
+    pixelIntersect = h.getMaterial()->getDiffuseColor()*pixelIntersect;
 
     for(int l = 0; l < m_scene->getNumLights(); l++){
       //Light
